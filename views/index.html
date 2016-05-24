@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+    #chat{
+   height:500px;
+}
+#contentwrap{
+  display: none;
+}
+
+#chatwrap{
+     float: left;
+   border: 1px solid;
+}
+
+
+    </style>
+  </head>
+  <body>
+<div id="nickwrap">
+  <p>enter a username: </p>
+ <p id="nickerror"></p>
+<form id="setnick">
+  <input size="40" id="nickname">
+ <input type="submit" >
+
+</form>
+
+</div>
+
+
+<div id="contentwrap">
+ <div id="chatwrap">
+    <div id="chat"></div>
+    <form id="send-message">
+      <input size="40" id="msg"/>
+      <input type="submit"/>
+    </form></div>
+<div id="users"></div>
+</div>
+
+
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+   <script>
+     jQuery(function($){
+
+      var socket=io.connect();
+      var $nickform=$('#setnick');
+      var $nickerror=$('#nickerror');
+      var $nickbox=$('#nickname');
+      var $users=$('#users');
+
+      var $messageform= $('#send-message');
+      var $messagebox= $('#msg');
+      var $chat= $('#chat');
+
+      
+      $nickform.submit(function(e){
+         e.preventDefault();
+         
+         socket.emit('new user',$nickbox.val(), function(data){
+                if(data){
+               $('#nickwrap').hide();
+               $('#contentwrap').show();
+
+                }else{
+              $('#nickerror').html('sorry!..the name already exists');
+
+                }
+            });
+          $nickbox.val('');
+         });
+
+    socket.on('usernames',function(data){
+       var html='';
+       for(i=0;i<=data.length;i++){
+        html+=data[i]+'<br/>';
+       }
+        $('#users').html(html);
+
+
+ });
+
+
+
+
+      $messageform.submit(function(e){
+         e.preventDefault();
+         
+         socket.emit('send message',$messagebox.val());
+         $messagebox.val('');
+
+         });
+
+
+       socket.on('new message',function(data){
+
+                   $chat.append('</br>'+data.nick+':</br>'+data.msg+'<br/>');
+
+
+      });
+
+
+     });
+
+
+
+
+   </script>
+
+
+  </body>
+</html>
